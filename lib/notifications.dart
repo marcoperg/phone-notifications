@@ -1,17 +1,33 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:awesome_notifications_fcm/awesome_notifications_fcm.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'handleAudio.dart';
 
-class NotificationController {
+class NotificationController extends ChangeNotifier {
   static ReceivedAction? initialAction;
   static late FlutterTts tts;
   static late AudioPlayerHandler audioPlayer;
   static bool speechNotifications = true;
+
+  static final NotificationController _instance =
+      NotificationController._internal();
+
+  factory NotificationController() {
+    return _instance;
+  }
+
+  NotificationController._internal();
+  String _firebaseToken = '';
+  String get firebaseToken => _firebaseToken;
+
+  String _nativeToken = '';
+  String get nativeToken => _nativeToken;
 
   static Future<void> initializeLocalNotifications() async {
     await AwesomeNotifications().initialize(
@@ -41,9 +57,18 @@ class NotificationController {
       ),
     );
     await tts.awaitSpeakCompletion(true);
-    await NotificationController.startListeningNotificationEvents();
     initialAction = await AwesomeNotifications()
         .getInitialNotificationAction(removeFromActionEvents: false);
+  }
+
+  static Future<void> initializeRemoteNotifications() async {
+    await Firebase.initializeApp();
+    await AwesomeNotificationsFcm().initialize(
+        onFcmSilentDataHandle: NotificationController.mySilentDataHandle,
+        onFcmTokenHandle: NotificationController.myFcmTokenHandle,
+        onNativeTokenHandle: NotificationController.myNativeTokenHandle,
+        licenseKeys: null,
+        debug: kDebugMode);
   }
 
   static Future<void> startListeningNotificationEvents() async {
@@ -68,8 +93,13 @@ class NotificationController {
     if (kDebugMode) {
       print('New notification');
     }
-    if (speechNotifications) await tts.speak('bop');
-    SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+    String text = receivedNotification.title != null
+        ? receivedNotification.title!
+        : 'notification';
+    if (speechNotifications) await tts.speak(text);
+    if (!kDebugMode) {
+      SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+    }
   }
 
   static Future<void> createNewNotification() async {
@@ -134,5 +164,38 @@ class NotificationController {
         ],
         schedule: NotificationCalendar.fromDate(
             date: DateTime.now().add(const Duration(seconds: 5))));
+  }
+
+  static Future<String> requestFirebaseToken() async {
+    if (await AwesomeNotificationsFcm().isFirebaseAvailable) {
+      try {
+        return await AwesomeNotificationsFcm().requestFirebaseAppToken();
+      } catch (exception) {
+        debugPrint('$exception');
+      }
+    } else {
+      debugPrint('Firebase is not available on this project');
+    }
+    return '';
+  }
+
+  @pragma("vm:entry-point")
+  static Future<void> mySilentDataHandle(FcmSilentData silentData) async {
+    if (kDebugMode) print('Silent data: $silentData');
+  }
+
+  @pragma("vm:entry-point")
+  static Future<void> myFcmTokenHandle(String token) async {
+    if (kDebugMode) print('Firebase Token: "$token"');
+    _instance._firebaseToken = token;
+    _instance.notifyListeners();
+  }
+
+  /// Use this method to detect when a new native token is received
+  @pragma("vm:entry-point")
+  static Future<void> myNativeTokenHandle(String token) async {
+    if (kDebugMode) print('Native Token:"$token"');
+    _instance._nativeToken = token;
+    _instance.notifyListeners();
   }
 }

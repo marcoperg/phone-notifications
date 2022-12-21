@@ -1,7 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:flutter/services.dart';
 
 import 'notifications.dart';
 
@@ -9,6 +7,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AwesomeNotifications().requestPermissionToSendNotifications();
   await NotificationController.initializeLocalNotifications();
+  await NotificationController.initializeRemoteNotifications();
   runApp(const MyApp());
 }
 
@@ -39,6 +38,13 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   void _incrementCounter() async {
     NotificationController.scheduleNewNotification();
+  }
+
+  @override
+  void initState() {
+    NotificationController.startListeningNotificationEvents();
+    NotificationController.requestFirebaseToken();
+    super.initState();
   }
 
   @override
