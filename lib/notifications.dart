@@ -10,6 +10,7 @@ class NotificationController {
   static ReceivedAction? initialAction;
   static late FlutterTts tts;
   static late AudioPlayerHandler audioPlayer;
+  static bool speechNotifications = true;
 
   static Future<void> initializeLocalNotifications() async {
     await AwesomeNotifications().initialize(
@@ -27,7 +28,7 @@ class NotificationController {
               defaultColor: Colors.deepPurple,
               ledColor: Colors.deepPurple)
         ],
-        debug: true);
+        debug: kDebugMode);
 
     tts = FlutterTts();
     audioPlayer = await AudioService.init(
@@ -56,7 +57,7 @@ class NotificationController {
     if (kDebugMode) {
       print('New action');
     }
-    await tts.speak('New action');
+    if (speechNotifications) await tts.speak('New action');
     //SystemChannels.platform.invokeMethod('SystemNavigator.pop');
   }
 
@@ -66,7 +67,7 @@ class NotificationController {
     if (kDebugMode) {
       print('New notification');
     }
-    await tts.speak('notification');
+    if (speechNotifications) await tts.speak('bop');
     //SystemChannels.platform.invokeMethod('SystemNavigator.pop');
     //await audioPlayer.play();
   }
@@ -132,6 +133,6 @@ class NotificationController {
               isDangerousOption: true)
         ],
         schedule: NotificationCalendar.fromDate(
-            date: DateTime.now().add(const Duration(seconds: 5))));
+            date: DateTime.now().add(const Duration(seconds: 1))));
   }
 }

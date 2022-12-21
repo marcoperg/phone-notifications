@@ -10,17 +10,19 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
+const MaterialColor MAIN_COLOR = Colors.green;
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Flutter Demo',
+        title: 'Notifications',
         theme: ThemeData(
-          primarySwatch: Colors.yellow,
+          primarySwatch: MAIN_COLOR,
         ),
-        home: const MyHomePage(title: 'Flutter Demo Home Page'));
+        home: const MyHomePage(title: 'Notifications'));
   }
 }
 
@@ -33,13 +35,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
   void _incrementCounter() async {
     NotificationController.scheduleNewNotification();
-    setState(() {
-      _counter++;
-    });
   }
 
   @override
@@ -49,23 +46,36 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
+        child: Padding(
+            padding: const EdgeInsets.only(top: 100),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text('Speech notifications:',
+                        style: Theme.of(context).textTheme.headline5),
+                    Switch(
+                      // This bool value toggles the switch.
+                      value: NotificationController.speechNotifications,
+                      activeColor: MAIN_COLOR,
+                      onChanged: (bool value) {
+                        // This is called when the user toggles the switch.
+                        setState(() {
+                          NotificationController.speechNotifications = value;
+                        });
+                      },
+                    )
+                  ],
+                )
+              ],
+            )),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
         tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.announcement_sharp),
       ),
     );
   }
