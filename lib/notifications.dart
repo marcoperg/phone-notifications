@@ -2,6 +2,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 import 'handleAudio.dart';
@@ -39,7 +40,7 @@ class NotificationController {
         androidNotificationOngoing: true,
       ),
     );
-    tts.awaitSpeakCompletion(true);
+    await tts.awaitSpeakCompletion(true);
     await NotificationController.startListeningNotificationEvents();
     initialAction = await AwesomeNotifications()
         .getInitialNotificationAction(removeFromActionEvents: false);
@@ -68,8 +69,7 @@ class NotificationController {
       print('New notification');
     }
     if (speechNotifications) await tts.speak('bop');
-    //SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-    //await audioPlayer.play();
+    SystemChannels.platform.invokeMethod('SystemNavigator.pop');
   }
 
   static Future<void> createNewNotification() async {
@@ -133,6 +133,6 @@ class NotificationController {
               isDangerousOption: true)
         ],
         schedule: NotificationCalendar.fromDate(
-            date: DateTime.now().add(const Duration(seconds: 1))));
+            date: DateTime.now().add(const Duration(seconds: 5))));
   }
 }
