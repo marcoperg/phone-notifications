@@ -37,7 +37,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   void _incrementCounter() async {
-    NotificationController.scheduleNewNotification();
+    NotificationController.testNewNotification();
   }
 
   @override

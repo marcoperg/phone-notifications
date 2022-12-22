@@ -89,74 +89,37 @@ class NotificationController extends ChangeNotifier {
     String text = receivedNotification.title != null
         ? receivedNotification.title!
         : 'notification';
-    if (speechNotifications) await tts.speak(text);
+
+    if (speechNotifications &&
+        receivedNotification.payload?['speech'] == 'yes') {
+      await tts.speak(text);
+    }
     if (!kDebugMode) {
       SystemChannels.platform.invokeMethod('SystemNavigator.pop');
     }
   }
 
-  static Future<void> createNewNotification() async {
+  static Future<void> createNewNotification(Map<String, String?>? data) async {
     bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
     if (!isAllowed) return;
 
     await AwesomeNotifications().createNotification(
-        content: NotificationContent(
-            id: -1, // -1 is replaced by a random number
-            channelKey: 'alerts',
-            fullScreenIntent: true,
-            title: 'Huston! The eagle has landed!',
-            body:
-                "A small step for a man, but a giant leap to Flutter's community!",
-            bigPicture: 'https://storage.googleapis.com/cms-storage-bucket/d406c736e7c4c57f5f61.png',
-            largeIcon: 'https://storage.googleapis.com/cms-storage-bucket/0dbfcc7a59cd1cf16282.png',
-            //'asset://assets/images/balloons-in-sky.jpg',
-            notificationLayout: NotificationLayout.BigPicture,
-            payload: {'notificationId': '1234567890'}),
-        actionButtons: [
-          NotificationActionButton(key: 'REDIRECT', label: 'Redirect'),
-          NotificationActionButton(
-              key: 'REPLY',
-              label: 'Reply Message',
-              requireInputText: true,
-              actionType: ActionType.SilentAction),
-          NotificationActionButton(
-              key: 'DISMISS',
-              label: 'Dismiss',
-              actionType: ActionType.DismissAction,
-              isDangerousOption: true)
-        ]);
-  }
-
-  static Future<void> scheduleNewNotification() async {
-    bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
-    if (!isAllowed) return;
-
-    await AwesomeNotifications().createNotification(
-        content: NotificationContent(
-            id: -1, // -1 is replaced by a random number
-            channelKey: 'alerts',
-            fullScreenIntent: true,
-            wakeUpScreen: false,
-            title: "Huston! The eagle has landed!",
-            body:
-                "A small step for a man, but a giant leap to Flutter's community!",
-            bigPicture: 'https://storage.googleapis.com/cms-storage-bucket/d406c736e7c4c57f5f61.png',
-            largeIcon: 'https://storage.googleapis.com/cms-storage-bucket/0dbfcc7a59cd1cf16282.png',
-            //'asset://assets/images/balloons-in-sky.jpg',
-            notificationLayout: NotificationLayout.BigPicture,
-            payload: {
-              'notificationId': '1234567890'
-            }),
-        actionButtons: [
-          NotificationActionButton(key: 'REDIRECT', label: 'Redirect'),
-          NotificationActionButton(
-              key: 'DISMISS',
-              label: 'Dismiss',
-              actionType: ActionType.DismissAction,
-              isDangerousOption: true)
-        ],
-        schedule: NotificationCalendar.fromDate(
-            date: DateTime.now().add(const Duration(seconds: 5))));
+      content: NotificationContent(
+          id: -1,
+          channelKey: 'alerts',
+          fullScreenIntent: true,
+          title: data?['title'],
+          body: data?['body'],
+          bigPicture: data?['bigPicture'],
+          largeIcon: data?['largeIcon'],
+          notificationLayout: data?['bigPicture'] != null
+              ? NotificationLayout.BigPicture
+              : NotificationLayout.Default,
+          payload: {
+            'notificationId': data?['notificationId'],
+            'speech': data?['speech']
+          }),
+    );
   }
 
   static Future<String> requestFirebaseToken() async {
@@ -175,6 +138,7 @@ class NotificationController extends ChangeNotifier {
   @pragma("vm:entry-point")
   static Future<void> mySilentDataHandle(FcmSilentData silentData) async {
     if (kDebugMode) print('Silent data: $silentData');
+    await NotificationController.createNewNotification(silentData.data);
   }
 
   @pragma("vm:entry-point")
@@ -190,5 +154,37 @@ class NotificationController extends ChangeNotifier {
     if (kDebugMode) print('Native Token:"$token"');
     _instance._nativeToken = token;
     _instance.notifyListeners();
+  }
+
+  static Future<void> testNewNotification() async {
+    bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
+    if (!isAllowed) return;
+
+    await AwesomeNotifications().createNotification(
+        content: NotificationContent(
+            id: -1, // -1 is replaced by a random number
+            channelKey: 'alerts',
+            fullScreenIntent: true,
+            wakeUpScreen: true,
+            title: "This is a test",
+            body: "This notification is a test",
+            bigPicture:
+                'https://storage.googleapis.com/cms-storage-bucket/d406c736e7c4c57f5f61.png',
+            largeIcon: 'https://storage.googleapis.com/cms-storage-bucket/0dbfcc7a59cd1cf16282.png',
+            //'asset://assets/images/balloons-in-sky.jpg',
+            notificationLayout: NotificationLayout.BigPicture,
+            payload: {
+              'notificationId': '1234567890'
+            }),
+        actionButtons: [
+          NotificationActionButton(key: 'REDIRECT', label: 'Redirect'),
+          NotificationActionButton(
+              key: 'DISMISS',
+              label: 'Dismiss',
+              actionType: ActionType.DismissAction,
+              isDangerousOption: true)
+        ],
+        schedule: NotificationCalendar.fromDate(
+            date: DateTime.now().add(const Duration(seconds: 5))));
   }
 }
