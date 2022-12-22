@@ -47,7 +47,6 @@ class NotificationController extends ChangeNotifier {
         ],
         debug: kDebugMode);
 
-    AwesomeNotificationsFcm().subscribeToTopic(constants.FCM_TOPIC);
     tts = FlutterTts();
     await tts.awaitSpeakCompletion(true);
     initialAction = await AwesomeNotifications()
@@ -62,6 +61,7 @@ class NotificationController extends ChangeNotifier {
         onNativeTokenHandle: NotificationController.myNativeTokenHandle,
         licenseKeys: null,
         debug: kDebugMode);
+    await AwesomeNotificationsFcm().subscribeToTopic(constants.FCM_TOPIC);
   }
 
   static Future<void> startListeningNotificationEvents() async {
