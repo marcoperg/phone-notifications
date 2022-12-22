@@ -1,4 +1,3 @@
-import 'package:audio_service/audio_service.dart';
 import 'package:awesome_notifications_fcm/awesome_notifications_fcm.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/foundation.dart';
@@ -8,6 +7,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import 'handleAudio.dart';
+import 'constants.dart' as constants;
 
 class NotificationController extends ChangeNotifier {
   static ReceivedAction? initialAction;
@@ -47,15 +47,8 @@ class NotificationController extends ChangeNotifier {
         ],
         debug: kDebugMode);
 
+    AwesomeNotificationsFcm().subscribeToTopic(constants.FCM_TOPIC);
     tts = FlutterTts();
-    audioPlayer = await AudioService.init(
-      builder: () => AudioPlayerHandler(),
-      config: const AudioServiceConfig(
-        androidNotificationChannelId: 'com.ryanheise.myapp.channel.audio',
-        androidNotificationChannelName: 'Audio playback',
-        androidNotificationOngoing: true,
-      ),
-    );
     await tts.awaitSpeakCompletion(true);
     initialAction = await AwesomeNotifications()
         .getInitialNotificationAction(removeFromActionEvents: false);
