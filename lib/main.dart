@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 
 import 'notifications.dart';
+import 'constants.dart' as constants;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,8 +13,6 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-const MaterialColor MAIN_COLOR = Colors.green;
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
         title: 'Notifications',
         theme: ThemeData(
-          primarySwatch: MAIN_COLOR,
+          primarySwatch: constants.MAIN_COLOR,
         ),
         home: const MyHomePage(title: 'Notifications'));
   }
@@ -67,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       Switch(
                         // This bool value toggles the switch.
                         value: NotificationController.speechNotifications,
-                        activeColor: MAIN_COLOR,
+                        activeColor: constants.MAIN_COLOR,
                         onChanged: (bool value) {
                           // This is called when the user toggles the switch.
                           setState(() {
@@ -80,10 +80,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               )),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: _incrementCounter,
-          tooltip: 'Increment',
-          child: const Icon(Icons.announcement_sharp),
-        ));
+        floatingActionButton: (kDebugMode
+            ? (FloatingActionButton(
+                onPressed: _incrementCounter,
+                tooltip: 'Increment',
+                child: const Icon(Icons.announcement_sharp),
+              ))
+            : null));
   }
 }
