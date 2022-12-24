@@ -6,13 +6,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-import 'handleAudio.dart';
 import 'constants.dart' as constants;
 
 class NotificationController extends ChangeNotifier {
   static ReceivedAction? initialAction;
   static late FlutterTts tts;
-  static late AudioPlayerHandler audioPlayer;
   static bool speechNotifications = true;
 
   static final NotificationController _instance =
@@ -77,7 +75,6 @@ class NotificationController extends ChangeNotifier {
       print('New action');
     }
     if (speechNotifications) await tts.speak('New action');
-    //SystemChannels.platform.invokeMethod('SystemNavigator.pop');
   }
 
   @pragma("vm:entry-point")
@@ -93,9 +90,6 @@ class NotificationController extends ChangeNotifier {
     if (speechNotifications &&
         receivedNotification.payload?['speech'] == 'yes') {
       await tts.speak(text);
-    }
-    if (!kDebugMode) {
-      SystemChannels.platform.invokeMethod('SystemNavigator.pop');
     }
   }
 
